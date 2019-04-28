@@ -231,6 +231,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
                 fun setCurrent(resources: ArrayList<*>) {
                     for (resource in resources) {
                         if (resource is Pair<*, *>) {
+                            // This pair map the resourcePager's pageIndex to its href (.xhtml)
                             resource as Pair<Int, String>
                             if (resource.second.endsWith(href)) {
                                 if (resourcePager.currentItem == resource.first) {
@@ -238,11 +239,12 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
                                     val currentFragent = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
                                     locator.locations?.fragment?.let {
                                         var anchor = it
+                                        // why in the earth you've to write an if statement to reach it's else -> where is your ear Goha?! :/
                                         if (anchor.startsWith("#")) {
                                         } else {
                                             anchor = "#" + anchor
                                         }
-                                        val goto = resource.second +  anchor
+                                        val goto = resource.second + anchor
                                         currentFragent?.webView?.loadUrl(goto)
                                     }?:run {
                                         currentFragent?.webView?.loadUrl(resource.second)
@@ -254,6 +256,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
                                 break
                             }
                         } else {
+                            // This happened in case of viewing double pages (leftPage:rightPage)
                             resource as Triple<Int, String, String>
                             if (resource.second.endsWith(href) || resource.third.endsWith(href)) {
                                 resourcePager.currentItem = resource.first
@@ -266,10 +269,12 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
 
                 resourcePager.adapter = adapter
 
+                // if we currently viewing a single page
                 if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
                     setCurrent(resourcesSingle)
                 } else {
 
+                    // if we currently viewing a double pages
                     when (preferences.getInt(COLUMN_COUNT_REF, 0)) {
                         1 -> {
                             setCurrent(resourcesSingle)

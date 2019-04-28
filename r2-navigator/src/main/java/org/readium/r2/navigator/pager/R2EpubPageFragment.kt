@@ -53,6 +53,7 @@ class R2EpubPageFragment : Fragment() {
                 if (preferences.getInt(APPEARANCE_REF, 0) > 1) "#ffffff" else "#000000"
         ))
 
+        // TODO: here we set page padding based on vertical scroll mode status
         val scrollMode = preferences.getBoolean(SCROLL_REF, false)
         when (scrollMode) {
             true -> {
@@ -93,8 +94,12 @@ class R2EpubPageFragment : Fragment() {
                 val topDecile = webView.contentHeight - 1.15*metrics.heightPixels
                 val bottomDecile = (webView.contentHeight - metrics.heightPixels).toDouble()
 
-                when (scrollY) {
-                    in topDecile..bottomDecile -> {
+                 // FIXME: here we face a blinking issue when reach the end of the resource (chapter) because we reset the flag after reached the end of the resource.
+//                when (scrollY) {
+                 when {
+                     // remove the range to avoid the blinking issue
+//                    in topDecile..bottomDecile -> {
+                     scrollY >= topDecile.toInt() -> {
                         if (!endReached) {
                             endReached = true
                             webView.activity.onPageEnded(endReached)
@@ -144,6 +149,7 @@ class R2EpubPageFragment : Fragment() {
                 val previousFragment:R2EpubPageFragment? = (webView.activity.resourcePager.adapter as R2PagerAdapter).getPreviousFragment() as? R2EpubPageFragment
                 val nextFragment:R2EpubPageFragment? = (webView.activity.resourcePager.adapter as R2PagerAdapter).getNextFragment() as? R2EpubPageFragment
 
+                // current fragment (current resource)
                 if (this@R2EpubPageFragment.tag == currentFragment.tag) {
                     var locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.activity.publicationIdentifier}-documentLocations", "{}")))
 
@@ -158,11 +164,15 @@ class R2EpubPageFragment : Fragment() {
                         locations.progression?.let { progression ->
                             currentFragment.webView.progression = progression
 
+                            // if scrollMode (vertical scroll) enabled
                             if (webView.activity.preferences.getBoolean(SCROLL_REF, false)) {
 
                             currentFragment.webView.scrollToPosition(progression)
 
                             } else {
+                                // here when the scrollMode disabled we trying to navigate (scroll)
+                                // to the user last read position
+                                // TODO: check what is this counter for?
                                 (object : CountDownTimer(100, 1) {
                                     override fun onTick(millisUntilFinished: Long) {}
                                     override fun onFinish() {
@@ -175,6 +185,7 @@ class R2EpubPageFragment : Fragment() {
                     }
                 }
 
+                // next resource
                 nextFragment?.let {
                     if (this@R2EpubPageFragment.tag == nextFragment.tag){
                         if (nextFragment.webView.activity.publication.metadata.direction == PageProgressionDirection.rtl.name) {
@@ -187,6 +198,7 @@ class R2EpubPageFragment : Fragment() {
                     }
                 }
 
+                // previous resource
                 previousFragment?.let {
                     if (this@R2EpubPageFragment.tag == previousFragment.tag){
                         if (previousFragment.webView.activity.publication.metadata.direction == PageProgressionDirection.rtl.name) {
@@ -198,7 +210,6 @@ class R2EpubPageFragment : Fragment() {
                         }
                     }
                 }
-
             }
 
             // prevent favicon.ico to be loaded, this was causing NullPointerException in NanoHttp
@@ -223,8 +234,9 @@ class R2EpubPageFragment : Fragment() {
 
         locations.fragment?.let {
             var anchor = it
-            if (anchor.startsWith("#")) {
-            } else {
+//            if (anchor.startsWith("#")) {
+//            } else {
+            if (!anchor.startsWith("#")) {
                 anchor = "#" + anchor
             }
             val href = resourceUrl +  anchor
@@ -232,7 +244,6 @@ class R2EpubPageFragment : Fragment() {
         }?:run {
             webView.loadUrl(resourceUrl)
         }
-
 
         return v
     }

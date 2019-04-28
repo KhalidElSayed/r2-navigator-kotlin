@@ -11,7 +11,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.github.dcendents.android-maven'
-group='com.github.readium'
+group='com.github.khalidelsayed'
 
 android {
     flavorDimensions "testapp"
@@ -53,12 +53,13 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'com.shopgun.android:utils:1.0.9'
-    intTestappImplementation "com.github.readium:r2-shared-kotlin:$r2branch-SNAPSHOT"
+    implementation "com.github.readium:r2-shared-kotlin:$r2branch-SNAPSHOT"
+    /*intTestappImplementation "com.github.readium:r2-shared-kotlin:$r2branch-SNAPSHOT"
     intTestappWithLcpImplementation "com.github.readium:r2-shared-kotlin:$r2branch-SNAPSHOT"
     if (findProject(':r2-shared')) {
         devTestappImplementation project(':r2-shared')
         devTestappWithLcpImplementation project(':r2-shared')
-    }
+    }*/
     implementation "androidx.appcompat:appcompat:1.1.0-alpha02"
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'androidx.webkit:webkit:1.0.0'
